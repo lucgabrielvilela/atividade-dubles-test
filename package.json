@@ -1,0 +1,18 @@
+{
+  "name": "atividade-dubles",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Atividade prática — Dublês de Teste | Testes de Software II",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cobertura": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.4"
+  }
+}
