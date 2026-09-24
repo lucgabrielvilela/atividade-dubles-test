@@ -1,15 +1,9 @@
 import sgMail from '@sendgrid/mail';
+import { Notificador } from '../portas/Notificador.js';
 
-/**
- * Adaptador de notificação por e-mail usando o SendGrid.
- *
- * Repare que este arquivo fala a linguagem do SendGrid: `to`, `from`,
- * `subject`, `text`. Isso é esperado num adaptador — ele existe
- * justamente para traduzir. O problema começa quando essa linguagem
- * vaza para o TESTE.
- */
-export class NotificadorSendgrid {
+export class NotificadorSendgrid extends Notificador {
   constructor(chaveApi, remetente) {
+    super();
     sgMail.setApiKey(chaveApi);
     this.remetente = remetente;
   }
@@ -23,3 +17,4 @@ export class NotificadorSendgrid {
     });
   }
 }
+

@@ -1,20 +1,11 @@
-// Etapa 3 — Refatoracao da superespecificacao
-
+// Etapa 3 e 4 — Refatoracao da superespecificacao + contrato do Notificador
 
 import { test, expect, vi } from 'vitest';
-import sgMail from '@sendgrid/mail';
 
 import { renovarAssinatura } from '../src/renovarAssinatura.js';
-import { NotificadorSendgrid } from '../src/infra/notificadorSendgrid.js';
 import { AssinaturaCanceladaError } from '../src/erros.js';
 import { assinaturaAtiva, assinaturaCancelada } from './fixtures.js';
 
-vi.mock('@sendgrid/mail', () => ({
-  default: {
-    setApiKey: vi.fn(),
-    send: vi.fn(),
-  },
-}));
 
 const relogioFixo = { hoje: () => new Date('2026-03-01T00:00:00Z') };
 
@@ -95,17 +86,26 @@ test('T5 — assinatura cancelada é rejeitada', async () => {
   ).rejects.toThrow(AssinaturaCanceladaError);
 });
 
-// ── T6 
-test('T6 — envia o e-mail de confirmação', async () => {
-  sgMail.send.mockResolvedValue([{ statusCode: 202 }]);
+// ── T6
+test('T6 — cliente e notificado com a mensagem certa apos renovacao aprovada', async () => {
+  const relogio = { hoje: () => new Date('2026-03-01T00:00:00Z') };
+  // STUB — data fixa para prever o conteudo da mensagem
 
-  const notificador = new NotificadorSendgrid('CHAVE-FAKE', 'no-reply@exemplo.com');
-  await notificador.enviar('ana@exemplo.com', 'Assinatura renovada até 31/03/2026');
+  const gateway = { cobrar: vi.fn().mockResolvedValue({ status: 'aprovado' }) };
+  // STUB — cobranca aprovada para o caminho de notificacao ser executado
 
-  expect(sgMail.send).toHaveBeenCalledWith(
-    expect.objectContaining({
-      to: 'ana@exemplo.com',
-      subject: 'Assinatura renovada até 31/03/2026',
-    })
+  const repositorio = { salvar: vi.fn() };
+  // DUMMY — nao participa desta verificacao
+
+  const notificador = { enviar: vi.fn() };
+  // MOCK — dublê do contrato Notificador; a assertiva verifica destinatario e mensagem
+
+  const assinatura = assinaturaAtiva({ email: 'ana@exemplo.com' });
+
+  await renovarAssinatura(assinatura, repositorio, gateway, notificador, relogio);
+
+  expect(notificador.enviar).toHaveBeenCalledWith(
+    'ana@exemplo.com',
+    'Assinatura renovada até 31/03/2026'
   );
 });
